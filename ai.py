@@ -6,8 +6,13 @@ import pyttsx3
 import pytz
 import requests
 import speech_recognition as sr
+import wikipedia
 
 engine = pyttsx3.init()
+engine.setProperty('rate', 190)
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)
+engine.setProperty('volume', 1)
 
 api_key = "4cbc3a6b7db914cadda17514b61555c0"
 location = 'Patna'
@@ -18,6 +23,68 @@ url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_k
 def speak(text):
     engine.say(text)
     engine.runAndWait()
+
+
+# change voice
+def voice_change(v):
+    x = int(v)
+    engine.setProperty('voice', voices[x].id)
+    speak("done sir")
+
+
+def checktime(tt):
+    hour = datetime.datetime.now().hour
+    if "morning" in tt:
+        if 6 <= hour < 12:
+            speak("Good morning sir")
+        else:
+            if 12 <= hour < 18:
+                speak("it's Good afternoon sir")
+            elif 18 <= hour < 24:
+                speak("it's Good Evening sir")
+            else:
+                speak("it's Goodnight sir")
+    elif "afternoon" in tt:
+        if 12 <= hour < 18:
+            speak("it's Good afternoon sir")
+        else:
+            if 6 <= hour < 12:
+                speak("Good morning sir")
+            elif 18 <= hour < 24:
+                speak("it's Good Evening sir")
+            else:
+                speak("it's Goodnight sir")
+    else:
+        speak("it's night sir!")
+
+
+def wishme():
+    speak("Welcome Back")
+    hour = datetime.datetime.now().hour
+    if 6 <= hour < 12:
+        speak("Good Morning sir!")
+    elif 12 <= hour < 18:
+        speak("Good afternoon sir")
+    elif 18 <= hour < 24:
+        speak("Good Evening sir")
+    else:
+        speak("Goodnight sir")
+
+    speak("AI at your service, Please tell me how can i help you?")
+
+
+def wishme_end():
+    speak("signing off")
+    hour = datetime.datetime.now().hour
+    if 6 <= hour < 12:
+        speak("Good Morning")
+    elif 12 <= hour < 18:
+        speak("Good afternoon")
+    elif 18 <= hour < 24:
+        speak("Good Evening")
+    else:
+        speak("Goodnight.. Sweet dreams")
+    quit()
 
 
 # Python3 program to convert
@@ -96,21 +163,23 @@ def listen():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
+        r.pause_threshold = 0.5
         # r.adjust_for_ambient_noise(source, 2)
         audio = r.listen(source)
 
     try:
         print("Recognizing...")
-        query = r.recognize_google(audio)
+        query = r.recognize_google(audio, language='en-in')
         print(query)
         return query
     except Exception as e:
         print(e)
-        return ""
+        speak("say that again please...")
+        return "none"
 
 
 def ai():
-    speak("Hi, I'm your AI. How can I help you?")
+    # speak("Hi, I'm your AI. How can I help you?")
 
     while True:
         command = listen().lower()
@@ -131,9 +200,7 @@ def ai():
             curTime = timetoword(h, m)
             speak("It's about :")
             speak(curTime)
-        elif "goodbye" in command or "bye" in command or "exit" in command:
-            speak("Goodbye! Have a great day!")
-            sys.exit()
+
         elif "on light" in command or "on led" in command or "on bulb" in command:
             requests.get(f'http://172.20.10.3/led?led=Turn+On')
             speak("The Lights Are Turned On")
@@ -154,9 +221,55 @@ def ai():
         elif "front of me" in command or "detect object" in command or "what is in front of me" in command:
             speak("Detecting Objects...")
             subprocess.run(["python", "oll.py"])
+        elif ("hii" in command or "hello" in command or "goodmorning" in command
+              or "goodafternoon" in command or "goodnight" in command
+              or "morning" in command or "noon" in command or "night" in command):
+            command = command.replace("AI", "")
+            command = command.replace("hi", "")
+            command = command.replace("hello", "")
+            if ("morning" in command or "night" in command or "goodnight" in command
+                    or "afternoon" in command or "noon" in command):
+                checktime(command)
+            else:
+                speak("what can i do for you")
+
+        elif ('i am done' in command or 'bye bye AI' in command
+              or 'go offline AI' in command or 'bye' in command
+              or 'nothing' in command):
+            wishme_end()
+
+        elif "voice" in command or "change your" in command:
+            speak("for female say female and, for male say male")
+            q = listen()
+            if "female" in q:
+                voice_change(1)
+            elif "male" in q:
+                voice_change(0)
+        elif "male" in command or "female" in command:
+            if "female" in command:
+                voice_change(1)
+            elif "male" in command:
+                voice_change(0)
+
+        elif ('wikipedia' in command or 'what' in command or 'who' in command
+              or 'when' in command or 'where' in command):
+            speak("searching...")
+            command = command.replace("wikipedia", "")
+            command = command.replace("search", "")
+            command = command.replace("what", "")
+            command = command.replace("when", "")
+            command = command.replace("where", "")
+            command = command.replace("who", "")
+            command = command.replace("is", "")
+            result = wikipedia.summary(command, sentences=2)
+            print(command)
+            print(result)
+            speak(result)
+
         else:
             print("Sorry, I didn't understand that. Can you please repeat?")
 
 
 if __name__ == "__main__":
+    wishme()
     ai()
