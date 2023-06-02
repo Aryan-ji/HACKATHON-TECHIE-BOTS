@@ -116,7 +116,7 @@ def ai():
             speak("The Lights Are Turned Off")
 
         else:
-            speak("Sorry, I didn't understand that. Can you please repeat?")
+            print("Sorry, I didn't understand that. Can you please repeat?")
 
 
 if __name__ == "__main__":
