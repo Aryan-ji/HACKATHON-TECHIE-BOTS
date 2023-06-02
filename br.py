@@ -1,3 +1,4 @@
+import subprocess
 import cv2
 import pytesseract
 import pyttsx3
@@ -32,10 +33,10 @@ def process_frame(frame):
 
     # Stop the TTS speech from the previous frame if it's still speaking
     if tts_speech_id is not None:
-        engine.stop(tts_speech_id)
+        engine.stop()
 
     # Speak the recognized text
-    tts_speech_id = engine.say(text)
+    engine.say(text)
     engine.runAndWait()
 
 
@@ -61,7 +62,7 @@ def capture_video():
         if key == ord('c'):  # Press 'c' key to capture frame
             # Stop the ongoing speech synthesis
             if tts_speech_id is not None:
-                engine.stop(tts_speech_id)
+                engine.stop()
 
             # Perform text recognition and speech synthesis on the new frame
             process_frame(frame)
@@ -73,6 +74,9 @@ def capture_video():
     # Release the video capture device and close the OpenCV windows
     cap.release()
     cv2.destroyAllWindows()
+
+    # Run ai.py after the program is closed
+    subprocess.run(["python", "ai.py"])
 
 
 # Start capturing and processing video frames

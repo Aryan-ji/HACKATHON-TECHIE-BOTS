@@ -1,5 +1,6 @@
 import datetime
 import subprocess
+import sys
 
 import pyttsx3
 import pytz
@@ -7,6 +8,11 @@ import requests
 import speech_recognition as sr
 
 engine = pyttsx3.init()
+
+api_key = "4cbc3a6b7db914cadda17514b61555c0"
+location = 'Patna'
+
+url = f'http://api.openweathermap.org/data/2.5/weather?q={location}&appid={api_key}&units=metric'
 
 
 def speak(text):
@@ -55,6 +61,24 @@ def timetoword(h, m):
                 nums[(h % 12) + 1])
 
 
+def currentWheater():
+    # Send the HTTP GET request
+    response = requests.get(url)
+
+    # Parse the JSON response
+    data = response.json()
+
+    weather_description = data['weather'][0]['description'].capitalize()
+    temperature = data['main']['temp']
+    humidity = data['main']['humidity']
+    wind_speed = data['wind']['speed']
+
+    weather_paragraph = f"In {location}, the weather is currently {weather_description}. " \
+                        f"The temperature is {temperature}°C with a humidity of {humidity}%. " \
+                        f"The wind speed is {wind_speed} meters per second."
+    return weather_paragraph
+
+
 # Set the timezone to India
 timezone = pytz.timezone('Asia/Kolkata')
 
@@ -97,8 +121,8 @@ def ai():
             speak("I'm good. Thank you!")
         elif "what's your name" in command:
             speak("I'm an AI created with Python.")
-        elif "read book" in command:
-            speak("initializing text to speech")
+        elif "read book" in command or "red book" in command or "read text" in command or "read text" in command or "recognize text" in command:
+            speak("Sure Sir! initializing text to speech")
             subprocess.run(["python", "br.py"])
         elif "listen again" in command:
             speak("listening again")
@@ -109,13 +133,27 @@ def ai():
             speak(curTime)
         elif "goodbye" in command or "bye" in command or "exit" in command:
             speak("Goodbye! Have a great day!")
+            sys.exit()
         elif "on light" in command or "on led" in command or "on bulb" in command:
-            requests.get(f'http://172.20.10.3/H')
+            requests.get(f'http://172.20.10.3/led?led=Turn+On')
             speak("The Lights Are Turned On")
-        elif "off light" in command or "off led" in command or "off bulb" in command:
-            requests.get(f'http://172.20.10.3/L')
+        elif "off light" in command or "off led" in command or "off bulb" in command or "of light" in command or "of led" in command or "of bulb" in command:
+            requests.get(f'http://172.20.10.3/led?led=Turn+Off')
             speak("The Lights Are Turned Off")
+        elif "on fan" in command or "on motor" in command or "on cell fan" in command:
+            requests.get(f'http://172.20.10.3/motor?motor=Turn+On')
+            speak("The Fan is Turned on")
+        elif "off fan" in command or "off motor" in command or "off cell fan" in command or "of fan" in command or "of motor" in command or "of cell fan" in command:
+            requests.get(f'http://172.20.10.3/motor?motor=Turn+Off')
+            speak("The Fan is Turned off")
 
+        elif "current weather" in command or "weather report" in command:
+            current_weather = currentWheater()
+            speak(current_weather)
+
+        elif "front of me" in command or "detect object" in command or "what is in front of me" in command:
+            speak("Detecting Objects...")
+            subprocess.run(["python", "oll.py"])
         else:
             print("Sorry, I didn't understand that. Can you please repeat?")
 
