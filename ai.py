@@ -1,6 +1,7 @@
 import datetime
+import os
 import subprocess
-import sys
+import webbrowser as wb
 
 import pyttsx3
 import pytz
@@ -159,6 +160,18 @@ h = int(formatted_time_h)
 m = int(formatted_time_m)
 
 
+def date():
+    year = int(datetime.datetime.now().year)
+    month = int(datetime.datetime.now().month)
+    date = int(datetime.datetime.now().day)
+    speak("The current date is")
+    if month == 6:
+        month = "june"
+    speak(str(date) + "rd")
+    speak(month)
+    speak(year)
+
+
 def listen():
     r = sr.Recognizer()
     with sr.Microphone() as source:
@@ -174,7 +187,7 @@ def listen():
         return query
     except Exception as e:
         print(e)
-        speak("say that again please...")
+        # speak("say that again please...")
         return "none"
 
 
@@ -202,19 +215,19 @@ def ai():
             speak(curTime)
 
         elif "on light" in command or "on led" in command or "on bulb" in command:
-            requests.get(f'http://172.20.10.3/led?led=Turn+On')
+            requests.get(f'http://192.168.92.222/led?led=Turn+On')
             speak("The Lights Are Turned On")
         elif "off light" in command or "off led" in command or "off bulb" in command or "of light" in command or "of led" in command or "of bulb" in command:
-            requests.get(f'http://172.20.10.3/led?led=Turn+Off')
+            requests.get(f'http://192.168.92.222/led?led=Turn+Off')
             speak("The Lights Are Turned Off")
         elif "on fan" in command or "on motor" in command or "on cell fan" in command:
-            requests.get(f'http://172.20.10.3/motor?motor=Turn+On')
+            requests.get(f'http://192.168.92.222/motor?motor=Turn+On')
             speak("The Fan is Turned on")
         elif "off fan" in command or "off motor" in command or "off cell fan" in command or "of fan" in command or "of motor" in command or "of cell fan" in command:
-            requests.get(f'http://172.20.10.3/motor?motor=Turn+Off')
+            requests.get(f'http://192.168.92.222/motor?motor=Turn+Off')
             speak("The Fan is Turned off")
 
-        elif "current weather" in command or "weather report" in command:
+        elif "current weather" in command or "weather report" in command or "weather" in command:
             current_weather = currentWheater()
             speak(current_weather)
 
@@ -243,13 +256,19 @@ def ai():
             q = listen()
             if "female" in q:
                 voice_change(1)
-            elif "male" in q:
+            elif "male" in q or "mail" in q:
                 voice_change(0)
         elif "male" in command or "female" in command:
             if "female" in command:
                 voice_change(1)
             elif "male" in command:
                 voice_change(0)
+
+        elif "search on google" in command or "open website" in command:
+            speak("What should i search or open?")
+            chromepath = 'C:/Program Files/Google/Chrome/Application/chrome.exe %s'
+            search = listen().lower()
+            wb.get(chromepath).open_new_tab(search + '.com')
 
         elif ('wikipedia' in command or 'what' in command or 'who' in command
               or 'when' in command or 'where' in command):
@@ -266,7 +285,36 @@ def ai():
             print(result)
             speak(result)
 
+            # reminder function
+
+        elif "create a reminder list" in command or "reminder" in command:
+            speak("What is the reminder?")
+            data = listen()
+            speak("You said to remember that" + data)
+            reminder_file = open("data.txt", 'a')
+            reminder_file.write('\n')
+            reminder_file.write(data)
+            reminder_file.close()
+
+        # reading reminder list
+
+        elif "do you know anything" in command or "remember" in command:
+            reminder_file = open("data.txt", 'r')
+            speak("You said me to remember that: " + reminder_file.read())
+
+        elif 'date' in command:
+            date()
+
+        elif "logout" in command or "log out" in command:
+            os.system("shutdown -1")
+        elif "restart" in command:
+            speak("restarting system")
+            os.system("shutdown /r /t 1")
+        elif "shut down" in command:
+            os.system("shutdown /r /t 1")
+
         else:
+
             print("Sorry, I didn't understand that. Can you please repeat?")
 
 
