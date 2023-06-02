@@ -72,6 +72,7 @@ def listen():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
+        # r.adjust_for_ambient_noise(source, 2)
         audio = r.listen(source)
 
     try:
@@ -109,10 +110,10 @@ def ai():
         elif "goodbye" in command or "bye" in command or "exit" in command:
             speak("Goodbye! Have a great day!")
         elif "on light" in command or "on led" in command or "on bulb" in command:
-            requests.get(f'http://192.168.92.222/H')
+            requests.get(f'http://172.20.10.3/H')
             speak("The Lights Are Turned On")
         elif "off light" in command or "off led" in command or "off bulb" in command:
-            requests.get(f'http://192.168.92.222/L')
+            requests.get(f'http://172.20.10.3/L')
             speak("The Lights Are Turned Off")
 
         else:
